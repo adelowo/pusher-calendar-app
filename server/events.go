@@ -3,15 +3,18 @@ package main
 import (
 	"errors"
 	"time"
+
+	"gopkg.in/mgo.v2/bson"
 )
 
 // Event represents a saved event in the database
 type Event struct {
-	ID          int64  `json:"id"`
-	Date        string `json:"date"`
-	Title       string `json:"title"`
-	Description string `json:"description"`
-	UserID      string
+	ID          bson.ObjectId `bson:"_id,omitempty" json:"id"`
+	Date        string        `json:"date"`
+	Time        string        `json:"time"`
+	Title       string        `json:"title"`
+	Description string        `json:"description"`
+	UserID      string        `json:"userID"`
 }
 
 type Events []Event
@@ -33,11 +36,21 @@ func IsValidEvent(e Event) error {
 		return errors.New("description should be more than 4 characters")
 	}
 
-	t, err := time.Parse("01-01-2006", e.Date)
+	t, err := time.Parse("2006-01-01", e.Date)
 	if err != nil {
 		return err
 	}
 
+	if time.Now().After(t) {
+		return errors.New("You can only add an event going forward not backwards")
+	}
+
+	t, err = time.Parse(time.Kitchen, e.Time)
+	if err != nil {
+		return err
+	}
+
+	e.Time = t.String()
 	e.Date = t.String()
 	return nil
 }

@@ -84,7 +84,6 @@ func login(s *store) http.HandlerFunc {
 
 		user, err := s.FindOrCreateUser(body.Email)
 		if err != nil {
-			fmt.Println(err)
 			w.WriteHeader(http.StatusInternalServerError)
 			encode(w, response{Message: "An error occurred while authenticating the user", Timestamp: time.Now().Unix()})
 			return
@@ -126,6 +125,22 @@ func addEvent(s *store) http.HandlerFunc {
 			})
 			return
 		}
+
+		if err := s.StoreEvent(userFromContext(r.Context()), e); err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			encode(w, Response{
+				Message:   "An error occurred while saving your event",
+				Timestamp: time.Now().Unix(),
+			})
+			return
+		}
+
+		w.WriteHeader(http.StatusOK)
+		encode(w, Response{
+			Message:   "Your event was successfully added",
+			Timestamp: time.Now().Unix(),
+		})
+
 	}
 }
 

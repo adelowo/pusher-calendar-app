@@ -36,7 +36,10 @@ func authenticateUser(db *store) func(next http.Handler) http.Handler {
 
 			user, err := db.FindUserByAccessToken(token)
 			if err != nil {
-				next.ServeHTTP(w, r)
+				encode(w, Response{
+					Message:   "Could not authenticate user",
+					Timestamp: time.Now().Unix(),
+				})
 				return
 			}
 

@@ -16,7 +16,9 @@ func (db *store) StoreEvent(u *User, e Event) error {
 	sess := db.inner.Copy()
 	defer sess.Close()
 
-	return nil
+	e.UserID = u.ID.Hex()
+
+	return sess.DB("").C("events").Insert(e)
 }
 
 func (db *store) DeleteEvent(e Event) error {
