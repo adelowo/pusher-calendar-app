@@ -1,0 +1,12 @@
+client/node_modules/**/*
+client.expo/*
+client/npm-debug.*
+client/*.jks
+client/*.p12
+client/*.key
+client/*.mobileprovision
+client/*.orig.*
+client/web-build/
+client/web-report/
+
+server/node_modules/**/*
