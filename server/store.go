@@ -49,3 +49,12 @@ func (db *store) FindOrCreateUser(email string) (*User, error) {
 
 	return u, nil
 }
+
+func (db *store) FindUserByAccessToken(token string) (*User, error) {
+	u := new(User)
+
+	sess := db.inner.Copy()
+	defer sess.Close()
+
+	return u, sess.DB("").C("users").Find(bson.M{"accessToken": token}).One(&u)
+}

@@ -36,9 +36,16 @@ func main() {
 
 	mux.Post("/login", login(db))
 
-	mux.Route("/events", func(r chi.Router) {
-		r.Post("/add", addEvent(db))
-		r.Delete("/:id", deleteEvent(db))
+	mux.Group(func(rr chi.Router) {
+
+		rr.Route("/events", func(r chi.Router) {
+
+			r.Use(authenticateUser(db))
+
+			r.Post("/add", addEvent(db))
+			r.Delete("/:id", deleteEvent(db))
+		})
+
 	})
 
 	log.Printf("Running HTTP server on %d", *port)
@@ -77,6 +84,7 @@ func login(s *store) http.HandlerFunc {
 
 		user, err := s.FindOrCreateUser(body.Email)
 		if err != nil {
+			fmt.Println(err)
 			w.WriteHeader(http.StatusInternalServerError)
 			encode(w, response{Message: "An error occurred while authenticating the user", Timestamp: time.Now().Unix()})
 			return

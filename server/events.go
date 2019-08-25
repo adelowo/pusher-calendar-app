@@ -11,7 +11,10 @@ type Event struct {
 	Date        string `json:"date"`
 	Title       string `json:"title"`
 	Description string `json:"description"`
+	UserID      string
 }
+
+type Events []Event
 
 func IsValidEvent(e Event) error {
 	if len(e.Title) == 0 {
