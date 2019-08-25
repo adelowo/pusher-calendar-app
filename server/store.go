@@ -56,5 +56,5 @@ func (db *store) FindUserByAccessToken(token string) (*User, error) {
 	sess := db.inner.Copy()
 	defer sess.Close()
 
-	return u, sess.DB("").C("users").Find(bson.M{"accessToken": token}).One(&u)
+	return u, sess.DB("").C("users").Find(bson.M{"accesstoken": token}).One(&u)
 }
