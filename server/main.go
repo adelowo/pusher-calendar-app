@@ -148,6 +148,48 @@ func addEvent(s *store) http.HandlerFunc {
 func deleteEvent(s *store) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 
+		id := chi.URLParam(r, "id")
+
+		event, err := s.FindEvent(id)
+		if err != nil {
+			var status = http.StatusInternalServerError
+			var message = "An error occurred while fetching this event"
+
+			if err == mgo.ErrNotFound {
+				status = http.StatusNotFound
+				message = "Event does not exists"
+			}
+
+			w.WriteHeader(status)
+			encode(w, Response{
+				Message:   message,
+				Timestamp: time.Now().Unix(),
+			})
+			return
+		}
+
+		if event.UserID != userFromContext(r.Context()).ID.Hex() {
+			w.WriteHeader(http.StatusUnauthorized)
+			encode(w, Response{
+				Message:   "You don't have permission to view this",
+				Timestamp: time.Now().Unix(),
+			})
+			return
+		}
+
+		if err := s.DeleteEvent(event); err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			encode(w, Response{
+				Message:   "Could not delete event",
+				Timestamp: time.Now().Unix(),
+			})
+			return
+		}
+
+		encode(w, Response{
+			Message:   "This event has been deleted",
+			Timestamp: time.Now().Unix(),
+		})
 	}
 }
 

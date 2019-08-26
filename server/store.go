@@ -32,7 +32,10 @@ func (db *store) FindEvent(id string) (Event, error) {
 }
 
 func (db *store) DeleteEvent(e Event) error {
-	return nil
+	sess := db.inner.Copy()
+	defer sess.Close()
+
+	return sess.DB("").C("events").Remove(bson.M{"_id": e.ID})
 }
 
 func (db *store) FindOrCreateUser(email string) (*User, error) {
