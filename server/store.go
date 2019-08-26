@@ -21,6 +21,16 @@ func (db *store) StoreEvent(u *User, e Event) error {
 	return sess.DB("").C("events").Insert(e)
 }
 
+func (db *store) FindEvent(id string) (Event, error) {
+
+	var e Event
+
+	sess := db.inner.Copy()
+	defer sess.Close()
+
+	return e, sess.DB("").C("events").Find(bson.M{"_id": bson.ObjectIdHex(id)}).One(&e)
+}
+
 func (db *store) DeleteEvent(e Event) error {
 	return nil
 }

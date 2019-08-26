@@ -43,7 +43,8 @@ func main() {
 			r.Use(authenticateUser(db))
 
 			r.Post("/add", addEvent(db))
-			r.Delete("/:id", deleteEvent(db))
+			r.Get("/{id}", viewEvent(db))
+			r.Delete("/{id}", deleteEvent(db))
 		})
 
 	})
@@ -147,5 +148,41 @@ func addEvent(s *store) http.HandlerFunc {
 func deleteEvent(s *store) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 
+	}
+}
+
+func viewEvent(s *store) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+
+		id := chi.URLParam(r, "id")
+
+		event, err := s.FindEvent(id)
+		if err != nil {
+			var status = http.StatusInternalServerError
+			var message = "An error occurred while fetching this event"
+
+			if err == mgo.ErrNotFound {
+				status = http.StatusNotFound
+				message = "Event does not exists"
+			}
+
+			w.WriteHeader(status)
+			encode(w, Response{
+				Message:   message,
+				Timestamp: time.Now().Unix(),
+			})
+			return
+		}
+
+		if event.UserID != userFromContext(r.Context()).ID.Hex() {
+			w.WriteHeader(http.StatusUnauthorized)
+			encode(w, Response{
+				Message:   "You don't have permission to view this",
+				Timestamp: time.Now().Unix(),
+			})
+			return
+		}
+
+		encode(w, event)
 	}
 }
